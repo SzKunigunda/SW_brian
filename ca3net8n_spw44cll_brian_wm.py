@@ -110,8 +110,8 @@ tref_Sli = 2.0*ms
 J_PyrExc  = 0.15
 J_PyrInh  = 4.0
 J_BasExc  = 1.5
-J_BasInh  = 2.0
-J_PyrSlowInh = 2.8 #3.0 # slow->pyr
+J_BasInh  = 6.0
+J_PyrSlowInh = 5.0 #3.0 # slow->pyr
 J_SliExc = 0.4  #0.1 # pyr->slow
 J_PyrExt = 0.3
 J_PyrMF = 5.0
@@ -145,7 +145,7 @@ delay_SliExc = 3.0*ms
 delay_PyrSlowInh = 2.0*ms
 
 p_rate_pyr = 0.0*Hz  #1.0e-8*Hz
-p_rate_mf = 5.0*Hz #3.0 #0.8
+p_rate_mf = 3.0*Hz #5.0 #0.8
 p_rate_bas = 0.0*Hz  #1.0e-8*Hz
 p_rate_sli = 0.0*Hz  #1.0e-8*Hz
 
