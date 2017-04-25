@@ -14,27 +14,10 @@ $Id: brunel.py 705 2010-02-03 16:06:52Z apdavison $
 """
 
 from pyNN.utility import get_script_args, Timer
-import numpy as np# -*- coding: iso-8859-1 -*-
-"""
-Conversion of the Brunel network implemented in nest-1.0.13/examples/brunel.sli
-to use PyNN.
-
-Brunel N (2000) Dynamics of sparsely connected networks of excitatory and inhibitory spiking neurons.
-J Comput Neurosci 8:183-208
-
-Andrew Davison, UNIC, CNRS
-May 2006
-
-$Id: brunel.py 705 2010-02-03 16:06:52Z apdavison $
-
-"""
-
-from pyNN.utility import get_script_args, Timer
 import numpy as np
 import matplotlib.pyplot as plt
 simulator_name = "brian"
 exec("from %s import *" %simulator_name)
-#from pyNN.random import NumpyRNG, RandomDistribution
 from detect_oscillations_15_50 import replay, ripple, gamma
 
 
@@ -55,8 +38,8 @@ epsilon_Bas = 0.25
 epsilon_Sli = 0.1
 
 N_Pyr_all =3000 #3600 #7200
-N_Bas =200 #200  #400
-N_Sli = 200 #200 #400
+N_Bas =166 #200  #400
+N_Sli = 166 #200 #400
 N_neurons = N_Pyr_all + N_Bas + N_Sli
 
 NP = 1   # number of excitatory subpopulations
@@ -110,7 +93,7 @@ tref_Sli = 2.0*ms
 J_PyrExc  = 0.15
 J_PyrInh  = 4.0
 J_BasExc  = 1.5
-J_BasInh  = 2.0
+J_BasInh  = 2.0 #2.0
 J_PyrSlowInh = 5.0 #3.0 # slow->pyr
 J_SliExc = 0.5  #0.1 # pyr->slow
 J_PyrExt = 0.3
@@ -119,7 +102,7 @@ J_BasExt = 0.3
 J_SliExt = 0.3
 
 # Potentiated synapses
-dpot = 15.0 #10.0       # degree of potentiation
+dpot = 10.0 #10.0       # degree of potentiation
 J_PyrPot = (1 + dpot) * J_PyrExc
 
 # Synaptic reversal potentials
@@ -145,7 +128,7 @@ delay_SliExc = 3.0*ms
 delay_PyrSlowInh = 2.0*ms
 
 p_rate_pyr = 0.0*Hz  #1.0e-8*Hz
-p_rate_mf = 3.0*Hz #5.0 #0.8
+p_rate_mf = 3.0*Hz #3.0 #0.8
 p_rate_bas = 0.0*Hz  #1.0e-8*Hz
 p_rate_sli = 0.0*Hz  #1.0e-8*Hz
 
@@ -158,11 +141,6 @@ dg_ampa/dt = -g_ampa/tauSyn_PyrExc : 1
 dg_gaba_fast/dt = -g_gaba_fast/tauSyn_PyrInh : 1
 dg_gaba_slow/dt = -g_gaba_slow/tauSyn_PyrSlowInh : 1
 '''
-
-# peldak ami alapjan lehet modositani
-#input1 = PoissonGroup(200, rates=lambda t: (t < 200 * ms and 2000 * Hz) or 0 * Hz)
-#eqs=Equations(’dx/dt=-x/tau : volt’,tau=10*ms)
-# Pyr_subnet.Vrest_Pyr = rand(N_Pyr)*(upper-lower) + lower
 
 reset_adexp = '''
 vm = reset_Pyr
@@ -241,8 +219,6 @@ BP = PoissonGroup(N_Bas, p_rate_bas)
 
 print "Creating slow inhibitory cell external input with rate %g spikes/s." % (p_rate_sli)
 PS = PoissonGroup(N_Sli, p_rate_sli) 
- 
-# egymastol fuggetlen Poisson bementek-e? van ilyen Brian példa- Brunel halozat
 
 print 'Connecting the network'
 
@@ -334,8 +310,6 @@ print "Running simulation for %g ms." % (simtime)
 run(simtime*ms, report='text') 
 
 
-
-
 # get the average spike rate of piramidals
 
 pyr_rate_array=[]
@@ -390,7 +364,6 @@ for sp in range(NP):
 np.savez(filename_spike_bas,spikes=smi.spikes,spiketimes=smi.spiketimes.values())
 np.savez(filename_spike_sli,spikes=sms.spikes,spiketimes=sms.spiketimes.values())
 
-
 # write a short report
 print("\n--- CA3 Network Simulation ---")
 print("Number of Neurons  : %d" % N_neurons)
@@ -406,42 +379,20 @@ print("Bas -> Pyr weight  : %g" % J_PyrInh)
 print("Bas -> Bas weight  : %g" % J_BasInh)
 print("Pyr -> SlowInh weight  : %g" % J_SliExc)
 print("SlowInh -> Pyr weight  : %g" % J_PyrSlowInh)
-print("Build time         : %g s" % buildCPUTime)   
+print("Build time         : %g s" % buildCPUTime) 
+print("Pyr avg rate: %.2f Hz" % np.mean(Pyr_avg_rate))   
+print("Bas avg rate: %.2f Hz" % np.mean(popri.rate))
+print("SlowInh avg rate: %.2f Hz" % np.mean(poprs.rate))
+  
 
 # === Plots ========================================================
-
-#membrane potentials
-
-#figure0 = plot(pyr_statemon.times / ms, pyr_statemon[0] / mV)
-#xlabel('Time (in ms)')
-#ylabel('Membrane potential (in mV)')
-#title('Membrane potential for pyr neuron 0')
-
-
-#figure1 = plot(pyr_statemon.times / ms, pyr_statemon[1] / mV)
-#xlabel('Time (in ms)')
-#ylabel('Membrane potential (in mV)')
-#title('Membrane potential for pyr neuron 1')
-
-
-#figure2= plot(bas_statemon.times / ms, bas_statemon[0] / mV)
-#xlabel('Time (in ms)')
-#ylabel('Membrane potential (in mV)')
-#title('Membrane potential for bas neuron 0')
-
-
-#figure3 = plot(bas_statemon.times / ms, bas_statemon[1] / mV)
-#xlabel('Time (in ms)')
-#ylabel('Membrane potential (in mV)')
-#title('Membrane potential for bas neuron 1')
-
 
 # Pyr population
 logic1 = isinstance(PxxE, float) # checks weather it is nan value
 print logic1
 logic2 = isinstance(PxxI, float)
 print logic2
-fig1 = plt.figure(figsize=(14, 20))
+fig0 = plt.figure(figsize=(14, 20))
 
 if not(logic1):
 	ax = fig1.add_subplot(4, 1, 1)
@@ -511,8 +462,8 @@ if not(logic2):
 	ax7.set_xlabel('Frequency [Hz]')
 	ax7.set_ylabel('PSD [dB]')
 
-#fig1.tight_layout()
-fig1.savefig('gammaPSD_mfexitation%.2fhz_norec.png' %p_rate_mf)
+fig1.tight_layout()
+fig1.savefig('gammaPSD%.2fmf_%.2fslowpyr_%.2fpyrslow_%ddpot_%.2fjbasinh.png' % (p_rate_mf,J_PyrSlowInh,J_SliExc,dpot,J_BasInh))
 
 
 fig2 = plt.figure(figsize=(10, 8))
@@ -532,115 +483,32 @@ ax.plot(np.linspace(0, simtime, len(poprs.rate)), poprs.rate, 'g-')
 ax.set_title('Slow inh. population rate')
 ax.set_xlabel('Time [ms]')
 
-fig2.savefig('avg_rate%.2fmf_%.2fslowpyr_%.2fpyrslow_%ddpot.png' % (p_rate_mf,J_PyrSlowInh,J_SliExc,dpot))
+fig2.savefig('avg_rate%.2fmf_%.2fslowpyr_%.2fpyrslow_%.2fJ_PyrSlowInh.png' % (p_rate_mf,J_PyrSlowInh,J_SliExc,J_PyrSlowInh))
 
 fig3 = plt.figure(figsize=(10,8))
-raster_plot(sme[0], spacebetweengroups=1, title='Pyr raster plot', newfigure=False)
+raster_plot(sme[0], spacebetweengroups=1, title='Pyr. raster plot', newfigure=False)
+fig3.savefig('raster_pyr_%.2fmf_%.2fslowpyr_%.2fpyrslow_%.2fJ_PyrSlowInh.png' % (p_rate_mf,J_PyrSlowInh,J_SliExc,J_PyrSlowInh))
 
 fig4 = plt.figure(figsize=(10,8))
 raster_plot(smi, spacebetweengroups=1, title='Bas. raster plot', newfigure=False)
+fig4.savefig('raster_bas_%.2fmf_%.2fslowpyr_%.2fpyrslow_%.2fJ_PyrSlowInh.png' % (p_rate_mf,J_PyrSlowInh,J_SliExc,J_PyrSlowInh))
+
+fig5 = plt.figure(figsize=(10, 8))
+raster_plot(sme[0], spacebetweengroups=1, title='Pyr. raster plot', newfigure=False)
+ax.set_title('Pyr. raster plot (last 100 ms)')
+ax.set_xlim([900, 1000])
+ax.set_xlabel('Time [ms]')
+ax.set_ylabel('Neuron number')
+fig5.savefig('raster100_pyr_%.2fmf_%.2fslowpyr_%.2fpyrslow_%.2fJ_PyrSlowInh.png' % (p_rate_mf,J_PyrSlowInh,J_SliExc,J_PyrSlowInh))
+
+fig6 = plt.figure(figsize=(10, 8))
+raster_plot(smi, spacebetweengroups=1, title='Bas. raster plot', newfigure=False)
+ax.set_title('Bas. raster plot (last 100 ms)')
+ax.set_xlim([900, 1000])
+ax.set_xlabel('Time [ms]')
+ax.set_ylabel('Neuron number')
+fig6.savefig('raster100_bas_%.2fmf_%.2fslowpyr_%.2fpyrslow_%.2fJ_PyrSlowInh.png' % (p_rate_mf,J_PyrSlowInh,J_SliExc,J_PyrSlowInh))
 
 
-fig3.savefig('rasterplot%dpyr%.2fMF.png' % (N_Pyr_all,p_rate_mf))
-fig4.savefig('rasterplot%dbas%.2fMF.png' % (N_Pyr_all,p_rate_mf))
-
-
-
-figure5= plot(sli_statemon.times/ms, sli_statemon[0]/ mV)
-xlabel('Time [ms]')
-ylabel('Membrane potential [mV]')
-title('Membrane potential for sli neuron 0')
-figure6= plot(sli_statemon.times/ms, sli_statemon[2]/ mV)
-xlabel('Time [ms]')
-ylabel('Membrane potential [mV]')
-title('Membrane potential for sli neuron 2')
-figure7= plot(sli_statemon.times/ms, sli_statemon[3]/ mV)
-xlabel('Time [ms]')
-ylabel('Membrane potential [mV]')
-title('Membrane potential for sli neuron')
-
-
-
-## raster plot and rate pyr (higher resolution)
-#fig4 = plt.figure(figsize=(10, 8))
-
-#spikes = sme.spikes
-#spikingNeurons = [i[0] for i in spikes]
-#spikeTimes = [i[1] for i in spikes]
-
-#tmp = np.asarray(spikeTimes)
-#ROI = np.where(tmp > 9.9)[0].tolist()
-
-#rasterX = np.asarray(spikeTimes)[ROI] * 1000
-#rasterY = np.asarray(spikingNeurons)[ROI]
-
-#if rasterY.min()-50 > 0:
-#ymin = rasterY.min()-50
-#else:
-#ymin = 0
-
-#if rasterY.max()+50 < 4000:
-#ymax = rasterY.max()+50
-#else:
-#ymax = 4000
-
-#ax = fig4.add_subplot(2, 1, 1)
-#ax.scatter(rasterX, rasterY, c='blue', marker='.', lw=0)
-#ax.set_title('Raster plot (last 100 ms)')
-#ax.set_xlim([9900, 10000])
-#ax.set_xlabel('Time [ms]')
-#ax.set_ylim([ymin, ymax])
-#ax.set_ylabel('Neuron number')
-
-#ax2 = fig4.add_subplot(2, 1, 2)
-#ax2.plot(np.linspace(9900, 10000, len(popre.rate[9900:10000])), popre.rate[9900:10000], 'b-', linewidth=1.5)
-#ax2.set_title('Pyr. population rate (last 100 ms)')
-#ax2.set_xlabel('Time [ms]')
-
-#fig4.tight_layout()
-
-#figName = os.path.join(SWBasePath, 'figures', str(multiplier)+'*pyr_rate.png')
-#fig4.savefig(figName)
-
-## raster plot and rate bas (higher resolution)
-#fig5 = plt.figure(figsize=(10, 8))
-
-#spikes = smi.spikes
-#spikingNeurons = [i[0] for i in spikes]
-#spikeTimes = [i[1] for i in spikes]
-
-#tmp = np.asarray(spikeTimes)
-#ROI = np.where(tmp > 9.9)[0].tolist()
-
-#rasterX = np.asarray(spikeTimes)[ROI] * 1000
-#rasterY = np.asarray(spikingNeurons)[ROI]
-
-#if rasterY.min()-50 > 0:
-#ymin = rasterY.min()-50
-#else:
-#ymin = 0
-
-#if rasterY.max()+50 < 1000:
-#ymax = rasterY.max()+50
-#else:
-#ymax = 1000
-
-#ax = fig5.add_subplot(2, 1, 1)
-#ax.scatter(rasterX, rasterY, c='green', marker='.', lw=0)
-#ax.set_title('Bas. raster plot (last 100 ms)')
-#ax.set_xlim([9900, 10000])
-#ax.set_xlabel('Time [ms]')
-#ax.set_ylim([ymin, ymax])
-#ax.set_ylabel('Neuron number')
-
-#ax2 = fig5.add_subplot(2, 1, 2)
-#ax2.plot(np.linspace(9900, 10000, len(popri.rate[9900:10000])), popri.rate[9900:10000], 'g-', linewidth=1.5)
-#ax2.set_title('Bas. population rate (last 100 ms)')
-#ax2.set_xlabel('Time [ms]')
-
-#fig5.tight_layout()
-
-#figName = os.path.join(SWBasePath, 'figures', str(multiplier)+'*bas_rate.png')
-#fig5.savefig(figName)
-
+#plt.show()
 plt.close('all')
